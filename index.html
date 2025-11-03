@@ -36,9 +36,7 @@
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
 
-        /* OPÇÃO 1: Selo feito em CSS (para testes rápidos)
-           Se quiser usar sua imagem, comente este bloco.
-        */
+        /* OPÇÃO 1: Selo feito em CSS (para testes rápidos) */
         #arcane-seal-css {
             width: 80px;
             height: 80px;
@@ -49,17 +47,13 @@
             animation: pulse 3s infinite ease-in-out;
         }
 
-        /* OPÇÃO 2: Sua imagem PNG
-           Descomente este bloco e a tag <img> no HTML para usar.
-        */
-        /*
+        /* OPÇÃO 2: Sua imagem PNG (se for usar, atualize o <img> no HTML) */
         #arcane-seal-img {
             width: 120px;
             height: auto;
             filter: drop-shadow(0 0 15px #8A2BE2);
             animation: pulse 3s infinite ease-in-out;
         }
-        */
 
         @keyframes pulse {
             0% {
@@ -189,7 +183,8 @@ A jornada é tua.
         function setupAudio() {
             sound = new Howl({
                 // SUBSTITUA 'audio-mecanismo.mp3' PELO CAMINHO DO SEU ÁUDIO
-                src: ['audio-mecanismo.mp3'],
+                // O "./" garante que ele procure no mesmo diretório do index.html
+                src: ['./audio-mecanismo.mp3'],
                 loop: true,
                 volume: 0.6
             });
