@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Pergaminho Arcano</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'MedievalSharp', cursive;
+            overflow: hidden; /* Proíbe o scroll manual */
+        }
+
+        /* --- SELO ARCANO (GATILHO) --- */
+        #seal-container {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        /* OPÇÃO 1: Selo feito em CSS (para testes rápidos)
+           Se quiser usar sua imagem, comente este bloco.
+        */
+        #arcane-seal-css {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #301934; /* Roxo escuro */
+            border: 3px solid #8A2BE2;
+            box-shadow: 0 0 15px #8A2BE2, 0 0 30px #8A2BE2, inset 0 0 10px #DDA0DD;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        /* OPÇÃO 2: Sua imagem PNG
+           Descomente este bloco e a tag <img> no HTML para usar.
+        */
+        /*
+        #arcane-seal-img {
+            width: 120px;
+            height: auto;
+            filter: drop-shadow(0 0 15px #8A2BE2);
+            animation: pulse 3s infinite ease-in-out;
+        }
+        */
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 15px #8A2BE2, 0 0 30px #8A2BE2, inset 0 0 10px #DDA0DD;
+                filter: drop-shadow(0 0 15px #8A2BE2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 25px #C71585, 0 0 50px #C71585, inset 0 0 15px #DDA0DD;
+                filter: drop-shadow(0 0 25px #C71585);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px #8A2BE2, 0 0 30px #8A2BE2, inset 0 0 10px #DDA0DD;
+                filter: drop-shadow(0 0 15px #8A2BE2);
+            }
+        }
+
+        /* --- CENA 3D (THREE.JS) --- */
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* --- ASSINATURA FINAL --- */
+        #signature-container {
+            display: none; /* Começa escondido */
+            opacity: 0;
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            font-size: 1.5rem;
+            transition: opacity 1s ease-in;
+        }
+
+        #signature {
+            color: #ffffff;
+            /* Efeito de brilho (glow) roxo estático */
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 15px #C71585,
+                0 0 20px #C71585,
+                0 0 30px #C71585,
+                0 0 40px #C71585,
+                0 0 55px #C71585;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="seal-container">
+        <div id="arcane-seal-css"></div>
+        
+        </div>
+
+    <canvas id="three-canvas"></canvas>
+
+    <div id="signature-container">
+        <p id="signature">Arcanista-mor Amaris Solun</p>
+    </div>
+
+    <script>
+        // --- TEXTO LONGO (Estilo Pergaminho) ---
+        // Use \n para quebras de linha.
+        const LOREM_IPSUM_ARCANO = `
+Nas veias do cosmo, onde a luz teme pisar,
+o Vazio pulsa em compasso ancestral.
+Ouve, neófito, o sussurro das eras:
+as engrenagens do destino rangem.
+
+A Sétima Estrela sangrou sobre o véu,
+tecendo a runa da Despossessão.
+E do pó de estrelas mortas,
+o Primeiro Selo foi forjado.
+
+Não busque o poder que corrompe,
+mas o saber que liberta.
+Pois no coração do silêncio,
+a verdade aguarda, paciente.
+
+A geometria do efêmero,
+a matemática da alma.
+Tudo se dobra à Vontade
+quando a Vontade é una com o Todo.
+
+O Tempo é um rio que flui para trás,
+e a memória é a névoa em suas margens.
+Caminhamos sobre pontes de luar,
+buscando o que já foi perdido.
+
+Somente aqueles que ousam
+desvendar os nós do destino
+encontrarão a chave.
+
+A engrenagem gira.
+O coração bate.
+O caminho se revela.
+
+Contempla a Cifra.
+Entende o Padrão.
+O selo se abre.
+A jornada é tua.
+        `;
+
+        // --- VARIÁVEIS GLOBAIS ---
+        let scene, camera, renderer;
+        let sound;
+        let crawlGroup, textMesh, textHeight;
+        let animationInProgress = false;
+        let endThreshold = 0; // Calculado dinamicamente
+
+        // --- INICIALIZAÇÃO ---
+        function init() {
+            setupAudio();
+            setupScene();
+            setupListeners();
+        }
+
+        // --- CONFIGURAÇÃO DO ÁUDIO (HOWLER.JS) ---
+        function setupAudio() {
+            sound = new Howl({
+                // SUBSTITUA 'audio-mecanismo.mp3' PELO CAMINHO DO SEU ÁUDIO
+                src: ['audio-mecanismo.mp3'],
+                loop: true,
+                volume: 0.6
+            });
+        }
+
+        // --- CONFIGURAÇÃO DA CENA (THREE.JS) ---
+        function setupScene() {
+            const canvas = document.getElementById('three-canvas');
+            
+            // 1. Cena
+            scene = new THREE.Scene();
+
+            // 2. Câmera (com perspectiva para o efeito "crawl")
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(50, aspect, 1, 10000);
+            camera.position.set(0, 150, 400); // Posição elevada, olhando para baixo
+            camera.lookAt(0, 0, 0);
+            scene.add(camera);
+
+            // 3. Renderizador
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true,
+                alpha: true // Permite fundo transparente (embora o body seja preto)
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+
+        // --- CONFIGURAÇÃO DOS EVENTOS ---
+        function setupListeners() {
+            // Gatilho principal
+            document.getElementById('seal-container').addEventListener('click', startExperience, { once: true });
+            
+            // Responsividade
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // --- AÇÃO PRINCIPAL (QUANDO O SELO É CLICADO) ---
+        function startExperience() {
+            if (animationInProgress) return;
+            animationInProgress = true;
+
+            // 1. Esconder o selo
+            const seal = document.getElementById('seal-container');
+            seal.style.opacity = '0';
+            seal.style.transform = 'translateX(-50%) scale(0.5)';
+            seal.style.pointerEvents = 'none';
+
+            // 2. Tocar o áudio
+            sound.play();
+
+            // 3. Criar e iniciar o texto 3D
+            createCrawlText();
+            
+            // 4. Iniciar o loop de animação
+            animate();
+        }
+
+        // --- CRIAÇÃO DO TEXTO 3D (O "CRAWL") ---
+        function createCrawlText() {
+            // 1. Gerar a textura do texto em um canvas 2D
+            const textCanvas = createTextCanvas(LOREM_IPSUM_ARCANO);
+            textHeight = textCanvas.height; // Salva a altura para cálculo dinâmico
+
+            // 2. Criar a textura 3D a partir do canvas 2D
+            const texture = new THREE.CanvasTexture(textCanvas);
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+
+            // 3. Criar o material (com brilho roxo)
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+            });
+
+            // 4. Criar a geometria (um plano)
+            const geometry = new THREE.PlaneGeometry(textCanvas.width, textHeight);
+
+            // 5. Criar o Mesh (objeto 3D)
+            textMesh = new THREE.Mesh(geometry, material);
+
+            // 6. Criar um Grupo para aplicar a rotação de perspectiva
+            crawlGroup = new THREE.Group();
+            crawlGroup.add(textMesh);
+            
+            // Rotação em X para dar o efeito "Star Wars"
+            crawlGroup.rotation.x = -Math.PI / 3.5; // Ângulo de inclinação
+
+            // Posição inicial (fora da tela, abaixo)
+            // O cálculo é dinâmico: começa abaixo da tela + metade da própria altura
+            const startY = -textHeight / 2 - 400; 
+            crawlGroup.position.y = startY;
+
+            // Define o "ponto final" dinamicamente
+            // Quando o Y passar deste ponto, a animação termina.
+            // (Altura do texto * fator de inclinação) + buffer
+            endThreshold = (textHeight * Math.cos(crawlGroup.rotation.x)) * 0.7;
+
+            scene.add(crawlGroup);
+        }
+
+        // --- FUNÇÃO AUXILIAR: Desenha o texto em um Canvas 2D ---
+        function createTextCanvas(text) {
+            const lines = text.split('\n');
+            const fontSize = 48; // Tamanho da fonte
+            const lineHeight = fontSize * 1.3;
+            
+            // Cálculo dinâmico da altura do canvas
+            const canvasHeight = lines.length * lineHeight + (fontSize * 2);
+            const canvasWidth = 1024; // Largura fixa (padrão para texturas)
+
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            const ctx = canvas.getContext('2d');
+            
+            ctx.font = `${fontSize}px 'MedievalSharp'`;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            
+            // Efeito de brilho (glow) roxo
+            ctx.shadowColor = '#8A2BE2'; // Violeta
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Desenha cada linha no canvas
+            let y = fontSize * 2; // Padding inicial no topo
+            for (const line of lines) {
+                ctx.fillText(line, canvasWidth / 2, y);
+                y += lineHeight;
+            }
+
+            return canvas;
+        }
+
+        // --- LOOP DE ANIMAÇÃO (requestAnimationFrame) ---
+        function animate() {
+            // Se a animação acabou, não faz mais nada
+            if (!animationInProgress) return;
+
+            // Continua o loop na próxima frame
+            requestAnimationFrame(animate);
+
+            // A MÁGICA: Move o grupo de texto para cima
+            crawlGroup.position.y += 0.5; // Velocidade da subida
+
+            // Verifica dinamicamente se a animação terminou
+            if (crawlGroup.position.y > endThreshold) {
+                finishAnimation();
+            }
+
+            // Renderiza a cena
+            renderer.render(scene, camera);
+        }
+
+        // --- FINALIZAÇÃO DA ANIMAÇÃO ---
+        function finishAnimation() {
+            animationInProgress = false;
+
+            // Para a animação
+            // (O loop 'animate' vai parar sozinho)
+
+            // Remove o texto da cena e libera memória (boa prática)
+            if (crawlGroup) {
+                scene.remove(crawlGroup);
+                textMesh.geometry.dispose();
+                textMesh.material.map.dispose();
+                textMesh.material.dispose();
+            }
+
+            // Mostra a assinatura com efeito de fade-in
+            const signature = document.getElementById('signature-container');
+            signature.style.display = 'block';
+            setTimeout(() => {
+                signature.style.opacity = '1';
+            }, 100); // Pequeno delay para garantir o 'display: block'
+        }
+
+        // --- RESPONSIVIDADE (Ajusta câmera e renderizador) ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- INICIAR TUDO ---
+        init();
+    </script>
+</body>
+</html>
