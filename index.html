@@ -141,20 +141,18 @@
 
             vec4 texel = texture2D(map, distortedUv);
             
-            // Cor do texto base (Branco)
-            vec3 baseColor = vec3(1.0, 1.0, 1.0); 
+            // NOVO: Define um fator de brilho/pulsação baseado no tempo
+            float pulseFactor = (sin(time * 3.0) * 0.5 + 0.5); // Pulsa entre 0.5 e 1.0
 
-            // NOVO: Mistura o roxo com o branco, dependendo da área do texto
-            vec3 finalColor = mix(baseColor, glowColor, texel.a * 0.4); 
+            // Base do brilho roxo: o roxo deve aparecer nas áreas do texto (onde texel.a > 0)
+            vec3 purpleGlow = glowColor * texel.a * pulseFactor * 2.0; // Multiplicador para intensidade
 
-            // Efeito de Pulsação de Brilho (glow)
-            float pulse = (sin(time * 3.14) * 0.5 + 0.5); // 0.5 a 1.0
-            
-            // Aumenta a intensidade do brilho roxo
-            finalColor += glowColor * texel.a * pulse * 1.5; // 1.5 é o fator de intensidade
-            
-            // Garante que o texto tenha uma emissão mínima para o efeito
-            finalColor = mix(finalColor, baseColor, 0.2); 
+            // Cor base do texto: mantém um pouco de branco, mas o roxo domina
+            vec3 finalColor = mix(vec3(1.0, 1.0, 1.0), purpleGlow, texel.a); // Mistura branco e roxo
+
+            // Adiciona um "halo" roxo mais forte
+            finalColor += glowColor * texel.a * pulseFactor * 1.5;
+
 
             gl_FragColor = vec4(finalColor, texel.a);
         }
@@ -279,8 +277,8 @@ A jornada é tua.
                     map: { value: texture },
                     time: { value: 0.0 },
                     glowColor: { value: ARCANE_PURPLE },
-                    // Aumento sutil para a distorção ser notada
-                    distortionStrength: { value: 0.007 } 
+                    // Aumento da força da distorção para ser mais aparente
+                    distortionStrength: { value: 0.015 } // Ajuste fino, se necessário
                 },
                 vertexShader: document.getElementById('vertexShader').textContent,
                 fragmentShader: document.getElementById('fragmentShader').textContent,
