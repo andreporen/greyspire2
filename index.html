@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
@@ -25,8 +25,7 @@
             height: 100%;
             background-color: #000000; /* Preto absoluto */
             color: #ffffff;
-            /* Fonte padrão (embora o texto principal seja Uncial Antiqua) */
-            font-family: 'MedievalSharp', cursive;
+            font-family: 'MedievalSharp', cursive; /* Padrão, assinatura usa isso */
             overflow: hidden; /* Proíbe o scroll manual */
         }
 
@@ -43,18 +42,13 @@
         #arcane-seal-img {
             width: 100px; /* Tamanho base, ajuste se necessário */
             height: auto;
-            
-            /* Glow roxo sutil inicial */
             filter: drop-shadow(0 0 20px var(--cor-arcana));
-            
-            /* Transição suave para o estado "clicado" */
             transition: opacity 1.5s ease-out, filter 1.5s ease-out;
         }
 
-        /* NOVO: Estado do selo após o clique */
         #arcane-seal-img.clicked {
             opacity: 0.6; /* Perde intensidade */
-            filter: drop-shadow(0 0 8px var(--cor-arcana)); /* Glow diminui */
+            filter: drop_shadow(0 0 8px var(--cor-arcana)); /* Glow diminui */
         }
 
         /* --- CENA 3D (THREE.JS) --- */
@@ -81,33 +75,24 @@
         }
 
         #signature {
-            /* NOVO: Letras pretas, como definido */
-            color: #000000;
-            
-            /* * NOVO: Animação de pulso em 60 BPM (1s) 
-             * O text-shadow é agora controlado pelo @keyframes 
-            */
+            color: #000000; /* Letras pretas */
             animation: pulse-arcano 1s ease-in-out infinite;
         }
 
-        /* * NOVO: Animação de pulso para a assinatura (60 BPM = 1 segundo)
-         * Simula a "respiração" ou "batimento" da aura roxa
-         */
+        /* Animação de pulso para a assinatura (60 BPM = 1 segundo) */
         @keyframes pulse-arcano {
             0%, 100% {
-                /* Estado "contraído" do brilho */
-                text-shadow:
-                    0 0 7px #fff,
-                    0 0 12px var(--cor-arcana),
-                    0 0 20px var(--cor-arcana);
-            }
-            50% {
-                /* Estado "expandido" do brilho (respiração) */
                 text-shadow:
                     0 0 10px #fff,
                     0 0 20px var(--cor-arcana),
-                    0 0 35px var(--cor-arcana),
-                    0 0 50px var(--cor-arcana);
+                    0 0 35px var(--cor-arcana);
+            }
+            50% {
+                text-shadow:
+                    0 0 15px #fff,
+                    0 0 30px var(--cor-arcana),
+                    0 0 50px var(--cor-arcana),
+                    0 0 70px var(--cor-arcana);
             }
         }
     </style>
@@ -124,9 +109,51 @@
         <p id="signature">Arcanista-mor Amaris Solun</p>
     </div>
 
+    <script type="x-shader/x-vertex" id="vertexShader">
+        void main() {
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentShader">
+        uniform sampler2D map;
+        uniform float time;
+        uniform vec3 glowColor;
+        uniform float distortionStrength;
+
+        varying vec2 vUv;
+
+        // Função de ruído (para a corrupção)
+        float rand(vec2 co){
+            return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+        }
+
+        void main() {
+            vUv = uv; // Garante que vUv seja atribuído aqui.
+
+            vec2 distortedUv = vUv;
+            // Adiciona uma leve distorção randômica e baseada no tempo
+            distortedUv.x += sin(vUv.y * 10.0 + time * 5.0) * (rand(vUv * time) - 0.5) * distortionStrength;
+            distortedUv.y += cos(vUv.x * 12.0 + time * 4.0) * (rand(vUv * time) - 0.5) * distortionStrength;
+
+            vec4 texel = texture2D(map, distortedUv);
+            
+            // Cor do texto base (branco)
+            vec3 baseColor = vec3(1.0, 1.0, 1.0); 
+
+            // Aplica um glow roxo com base na transparência do texto
+            vec3 finalColor = mix(baseColor, glowColor, texel.a * 0.5); // 0.5 é a intensidade do glow misturado
+
+            // Intensifica o brilho e adiciona um efeito "pulsante"
+            float glowFactor = (sin(time * 3.14) * 0.5 + 0.5); // Pulsar de 0.5 a 1.5
+            finalColor += glowColor * texel.a * glowFactor * 0.8; // 0.8 é a intensidade do brilho pulsante
+
+            gl_FragColor = vec4(finalColor, texel.a);
+        }
+    </script>
+
     <script>
         // --- TEXTO LONGO (Estilo Pergaminho) ---
-        // Este texto será renderizado com a fonte 'Uncial Antiqua'
         const LOREM_IPSUM_ARCANO = `
 Nas veias do cosmo, onde a luz teme pisar,
 o Vazio pulsa em compasso ancestral.
@@ -172,7 +199,11 @@ A jornada é tua.
         let sound;
         let crawlGroup, textMesh, textHeight;
         let animationInProgress = false;
-        let endThreshold = 0; // Calculado dinamicamente
+        let endThreshold = 0;
+        let clock = new THREE.Clock(); // Para controlar o tempo no shader
+
+        // --- CORES ---
+        const ARCANE_PURPLE = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--cor-arcana').trim());
 
         // --- INICIALIZAÇÃO ---
         function init() {
@@ -184,7 +215,6 @@ A jornada é tua.
         // --- CONFIGURAÇÃO DO ÁUDIO (HOWLER.JS) ---
         function setupAudio() {
             sound = new Howl({
-                // O áudio deve estar na mesma pasta ou o caminho deve ser ajustado
                 src: ['./audio-mecanismo.mp3'], // 60 BPM
                 loop: true,
                 volume: 0.6
@@ -222,20 +252,12 @@ A jornada é tua.
             if (animationInProgress) return;
             animationInProgress = true;
 
-            // 1. NOVO: Selo perde intensidade (não some)
             const sealImg = document.getElementById('arcane-seal-img');
             sealImg.classList.add('clicked');
-            
-            // Impede cliques repetidos no container
             document.getElementById('seal-container').style.pointerEvents = 'none';
 
-            // 2. Tocar o áudio
             sound.play();
-
-            // 3. Criar e iniciar o texto 3D
             createCrawlText();
-            
-            // 4. Iniciar o loop de animação
             animate();
         }
 
@@ -248,9 +270,18 @@ A jornada é tua.
             texture.minFilter = THREE.LinearFilter;
             texture.magFilter = THREE.LinearFilter;
 
-            const material = new THREE.MeshBasicMaterial({
-                map: texture,
+            // NOVO: Usando ShaderMaterial para o efeito "corrompido"
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    map: { value: texture },
+                    time: { value: 0.0 },
+                    glowColor: { value: ARCANE_PURPLE },
+                    distortionStrength: { value: 0.005 } // Força da distorção (ajuste fino)
+                },
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
                 transparent: true,
+                side: THREE.DoubleSide
             });
 
             const geometry = new THREE.PlaneGeometry(textCanvas.width, textHeight);
@@ -259,12 +290,12 @@ A jornada é tua.
             crawlGroup = new THREE.Group();
             crawlGroup.add(textMesh);
             
-            crawlGroup.rotation.x = -Math.PI / 3.5; 
+            // NOVO: Diminuição da inclinação
+            crawlGroup.rotation.x = -Math.PI / 6; // Ângulo mais suave, tipo 30 graus
 
             const startY = -textHeight / 2 - 400; 
             crawlGroup.position.y = startY;
 
-            // Cálculo dinâmico do ponto final
             endThreshold = (textHeight * Math.cos(crawlGroup.rotation.x)) * 0.7;
 
             scene.add(crawlGroup);
@@ -285,14 +316,14 @@ A jornada é tua.
             
             const ctx = canvas.getContext('2d');
             
-            // NOVO: Fonte 'Uncial Antiqua' para o texto principal
-            ctx.font = `${fontSize}px 'Uncial Antiqua'`;
-            ctx.fillStyle = '#FFFFFF'; // Texto branco
+            // NOVO: Fonte 'Cinzel Decorative' para o texto principal
+            ctx.font = `${fontSize}px 'Cinzel Decorative'`;
+            ctx.fillStyle = '#FFFFFF'; 
             ctx.textAlign = 'center';
             
-            // NOVO: Efeito de brilho (aura) com a cor roxa definida
-            ctx.shadowColor = 'var(--cor-arcana)'; // #b24cff
-            ctx.shadowBlur = 10; // "leve brilho"
+            // NÃO MAIS GLOW AQUI, O SHADER FARÁ ISSO
+            ctx.shadowColor = 'transparent'; 
+            ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
 
@@ -310,8 +341,12 @@ A jornada é tua.
             if (!animationInProgress) return;
             requestAnimationFrame(animate);
 
-            // NOVO: Velocidade mais lenta e ritualística
-            crawlGroup.position.y += 0.35; 
+            // Atualiza o tempo no shader para a animação do efeito de corrupção
+            if (textMesh && textMesh.material && textMesh.material.uniforms && textMesh.material.uniforms.time) {
+                textMesh.material.uniforms.time.value = clock.getElapsedTime();
+            }
+
+            crawlGroup.position.y += 0.3; // Velocidade lenta e ritualística
 
             if (crawlGroup.position.y > endThreshold) {
                 finishAnimation();
@@ -324,7 +359,6 @@ A jornada é tua.
         function finishAnimation() {
             animationInProgress = false;
 
-            // Limpa o texto 3D da cena
             if (crawlGroup) {
                 scene.remove(crawlGroup);
                 textMesh.geometry.dispose();
@@ -332,7 +366,6 @@ A jornada é tua.
                 textMesh.material.dispose();
             }
 
-            // Mostra a assinatura (que agora pulsa via CSS)
             const signature = document.getElementById('signature-container');
             signature.style.display = 'block';
             setTimeout(() => {
