@@ -18,12 +18,34 @@ export function showSignature(){
   setTimeout(()=>{ sig.style.opacity='1'; },200);
 }
 
+export function showInterstitial(onDone){
+  const inter = document.getElementById('interstitial');
+  const glitch = document.getElementById('glitchLines');
+  if (!inter || !glitch) { onDone(); return; }
 
-function computeDistortionFromBeat(beatLevel, rate){
-  const BASE = 0.0022;
-  const PEAK = 0.0045;
-  const boost = Math.min(1, (rate - 1) / 0.5);
-  const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
-  return BASE + (PEAK - BASE) * k;
+  // 1. Define 'display: flex'
+  inter.style.display = 'flex';
+
+  // 2. Espera um frame e adiciona '.show' (fade-in)
+  requestAnimationFrame(() => {
+    inter.classList.add('show');
+  });
+
+  // 3. Tempo de espera (3000ms) antes do glitch
+  setTimeout(() => {
+    glitch.classList.add('glitch-run');
+
+    // 4. Ao final do glitch (450ms)
+    setTimeout(() => {
+      inter.classList.remove('show'); // Inicia o fade-out
+      glitch.classList.remove('glitch-run');
+      
+      // 5. ESPERA o fade-out (500ms) terminar
+      setTimeout(() => {
+        inter.style.display = 'none';
+        onDone && onDone();
+      }, 500);
+
+    }, 450);
+  }, 3000);
 }
-
