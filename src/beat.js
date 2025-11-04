@@ -68,12 +68,7 @@ export function getBeatAt(accumSec){
   return BEAT.values[idx];
 }
 
-
-function computeDistortionFromBeat(beatLevel, rate){
-  const BASE = 0.0022;
-  const PEAK = 0.0045;
-  const boost = Math.min(1, (rate - 1) / 0.5);
-  const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
-  return BASE + (PEAK - BASE) * k;
+export function getBeatMix(rate, time){
+  const p = Math.sin(time * rate * (Math.PI * 2)) * 0.5 + 0.5;
+  return Math.pow(p, 1.25);
 }
-
