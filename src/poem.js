@@ -48,4 +48,3 @@ function computeDistortionFromBeat(beatLevel, rate){
   const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
   return BASE + (PEAK - BASE) * k;
 }
-
