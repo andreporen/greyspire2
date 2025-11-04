@@ -3,7 +3,8 @@ import { vertexShader, fragmentShader } from './shaders.js';
 
 export function createTextMesh(renderer, poemLines){
   const isMobile = innerWidth <= SETTINGS.canvas.mobileMaxWidth;
-  let fontSize   = isMobile ? 22.4 : 32;
+  
+  let fontSize   = isMobile ? 25.6 : 32; 
   let lineHeight = fontSize * 1.28;
   let cssWidth   = SETTINGS.canvas.baseTextureWidth;
   let cssHeight  = Math.floor(poemLines.length * lineHeight + (fontSize * 2));
@@ -29,7 +30,8 @@ export function createTextMesh(renderer, poemLines){
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.NearestFilter;
+  
+  texture.magFilter = THREE.LinearFilter; 
   texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
   const mat = new THREE.ShaderMaterial({
@@ -37,9 +39,7 @@ export function createTextMesh(renderer, poemLines){
       map:{value:texture},
       time:{value:0.0},
       glowColor:{value:new THREE.Color(SETTINGS.colors.arcane)},
-      baseDistortion:{value:SETTINGS.shader.baseDistortion},
-      baseNoise:{value:SETTINGS.shader.baseNoise},
-      beatLevel:{value:0.0}
+      distortionStrength:{value: SETTINGS.DISTORTION_BASE }
     },
     vertexShader, fragmentShader, transparent:true
   });
@@ -51,20 +51,10 @@ export function createTextMesh(renderer, poemLines){
   group.add(mesh);
   group.rotation.x = 0;
 
-  const startY = -cssHeight/2 - 90;
+  const startY = -cssHeight/2;
   group.position.y = startY;
 
   mesh.userData.textConf = textConf;
 
   return { group, mesh, texture, textConf };
 }
-
-
-function computeDistortionFromBeat(beatLevel, rate){
-  const BASE = 0.0022;
-  const PEAK = 0.0045;
-  const boost = Math.min(1, (rate - 1) / 0.5);
-  const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
-  return BASE + (PEAK - BASE) * k;
-}
-
