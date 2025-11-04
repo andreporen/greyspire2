@@ -1,6 +1,12 @@
 export const SETTINGS = {
   colors: { arcane: '#b24cff' },
 
+  CRAWL_BASE: 0.60,        // velocidade mínima
+  CRAWL_MAX: 1.15,         // velocidade máxima
+  DISTORTION_BASE: 0.0002, // distorção sutil (base)
+  DISTORTION_PEAK: 0.0025, // distorção sutil (pico da batida)
+  DISTORTION_SYNC_WITH_BEAT: true,
+
   typing: {
     perWordMs: 220,            // velocidade (A1)
     perWordJitter: 50,
@@ -40,5 +46,4 @@ function computeDistortionFromBeat(beatLevel, rate){
   const boost = Math.min(1, (rate - 1) / 0.5);
   const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
   return BASE + (PEAK - BASE) * k;
-}
-
+}s
