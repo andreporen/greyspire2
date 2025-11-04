@@ -1,145 +1,171 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>O Pergaminho Arcano</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>O Pergaminho Arcano</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 
-  <style>
-    :root { --cor-arcana:#b24cff; }
+<style>
+:root { --cor-arcana:#b24cff; }
 
-    html, body {
-      margin:0; padding:0; width:100%; height:100%;
-      background:#000; color:#fff; font-family:'MedievalSharp', cursive;
-      overflow:hidden;
-    }
+html, body {
+margin:0; padding:0; width:100%; height:100%;
+background:#000; color:#fff; font-family:'MedievalSharp', cursive;
+overflow:hidden;
+}
 
-    /* Selo central */
-    #seal-container{
-      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:160px; height:160px; display:flex; justify-content:center; align-items:center;
-      cursor:pointer; z-index:20; pointer-events:auto;
-    }
-    #arcane-seal-img{
-      width:120px; height:auto; pointer-events:auto;
-      filter:drop-shadow(0 0 22px var(--cor-arcana));
-      transition:opacity .4s ease-out, filter .4s ease-out;
-    }
-    #arcane-seal-img.clicked{ opacity:0; filter:drop-shadow(0 0 5px var(--cor-arcana)); }
+/* Selo central */
+#seal-container{
+position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+width:160px; height:160px; display:flex; justify-content:center; align-items:center;
+cursor:pointer; z-index:20; pointer-events:auto;
+}
+#arcane-seal-img{
+width:120px; height:auto; pointer-events:auto;
+filter:drop-shadow(0 0 22px var(--cor-arcana));
+transition:opacity .4s ease-out, filter .4s ease-out;
+}
+#arcane-seal-img.clicked{ opacity:0; filter:drop-shadow(0 0 5px var(--cor-arcana)); }
 
-    /* Canvas Three.js */
-    #three-canvas{ position:fixed; top:0; left:0; z-index:1; }
+/* Canvas Three.js */
+#three-canvas{ position:fixed; top:0; left:0; z-index:1; }
 
-    /* Intersticial (tela de pensamento) */
-    #interstitial{
-      display:none; opacity:0;
-      position:fixed; inset:0; z-index:9;
-      display:flex; align-items:center; justify-content:center;
-      pointer-events:none;
-      background:transparent;
-      transition:opacity .5s ease;
-    }
-    #interstitial.show{ opacity:1; }
-    #interstitial.hide{ opacity:0; }
+/* Intersticial */
+#interstitial{
+display:none; opacity:0;
+position:fixed; inset:0; z-index:9;
+display:flex; align-items:center; justify-content:center;
+pointer-events:none;
+background:transparent;
+transition:opacity .5s ease;
+}
+#interstitial.show{ opacity:1; }
+#interstitial.hide{ opacity:0; }
 
-    .interstitial-text{
-      max-width: 800px; padding:0 24px; text-align:center;
-      font-size: clamp(20px, 4vw, 36px);
-      color:#fff;
-      text-shadow: 0 0 10px var(--cor-arcana), 0 0 20px var(--cor-arcana);
-      animation: distortPulse 1.2s infinite;
-      filter: brightness(1.05);
-    }
-    @keyframes distortPulse{
-      0%   { transform: translateZ(0) skew(0deg,0deg); filter: blur(0px); }
-      25%  { transform: translateZ(0) skew(0.3deg,-0.4deg); filter: blur(0.4px); text-shadow:0 0 6px #fff,0 0 14px var(--cor-arcana),0 0 24px var(--cor-arcana); }
-      50%  { transform: translateZ(0) skew(-0.4deg,0.2deg); filter: blur(0.6px); text-shadow:0 0 10px #fff,0 0 20px var(--cor-arcana),0 0 30px var(--cor-arcana); }
-      75%  { transform: translateZ(0) skew(0.2deg,-0.2deg); filter: blur(0.3px); text-shadow:0 0 6px #fff,0 0 14px var(--cor-arcana),0 0 24px var(--cor-arcana); }
-      100% { transform: translateZ(0) skew(0deg,0deg); filter: blur(0px); }
-    }
+.interstitial-text{
+max-width: 800px; padding:0 24px; text-align:center;
+font-size: clamp(20px, 4vw, 36px);
+color:#fff;
+text-shadow: 0 0 10px var(--cor-arcana), 0 0 20px var(--cor-arcana);
+animation: distortPulse 1.2s infinite;
+filter: brightness(1.05);
+}
+@keyframes distortPulse{
+0% { transform: translateZ(0) skew(0deg,0deg); filter: blur(0px); }
+25% { transform: translateZ(0) skew(0.3deg,-0.4deg); filter: blur(0.4px); text-shadow:0 0 6px #fff,0 0 14px var(--cor-arcana),0 0 24px var(--cor-arcana); }
+50% { transform: translateZ(0) skew(-0.4deg,0.2deg); filter: blur(0.6px); text-shadow:0 0 10px #fff,0 0 20px var(--cor-arcana),0 0 30px var(--cor-arcana); }
+75% { transform: translateZ(0) skew(0.2deg,-0.2deg); filter: blur(0.3px); text-shadow:0 0 6px #fff,0 0 14px var(--cor-arcana),0 0 24px var(--cor-arcana); }
+100% { transform: translateZ(0) skew(0deg,0deg); filter: blur(0px); }
+}
 
-    /* Assinatura/narrativa final */
-    #signature-container{
-      display:none; opacity:0; position:fixed; bottom:110px; left:50%;
-      transform:translateX(-50%); z-index:10; text-align:center; font-size:1.2rem;
-      font-family:'MedievalSharp', cursive; transition:opacity 1s ease-in;
-      max-width:600px; line-height:1.35;
-    }
-    #signature{ color:#fff; animation:pulse-arcano 1.4s ease-in-out infinite; }
-    @keyframes pulse-arcano{
-      0%,100%{ text-shadow:0 0 6px #fff, 0 0 12px var(--cor-arcana), 0 0 18px var(--cor-arcana); }
-      50%    { text-shadow:0 0 10px #fff,0 0 22px var(--cor-arcana),0 0 32px var(--cor-arcana),0 0 45px var(--cor-arcana); }
-    }
-  </style>
+/* Assinatura final */
+#signature-container{
+display:none; opacity:0; position:fixed; bottom:110px; left:50%;
+transform:translateX(-50%); z-index:10; text-align:center; font-size:1.2rem;
+font-family:'MedievalSharp', cursive; transition:opacity 1s ease-in;
+max-width:600px; line-height:1.35;
+}
+#signature{ color:#fff; animation:pulse-arcano 1.4s ease-in-out infinite; }
+@keyframes pulse-arcano{
+0%,100%{ text-shadow:0 0 6px #fff, 0 0 12px var(--cor-arcana), 0 0 18px var(--cor-arcana); }
+50% { text-shadow:0 0 10px #fff,0 0 22px var(--cor-arcana),0 0 32px var(--cor-arcana),0 0 45px var(--cor-arcana); }
+}
+</style>
 </head>
 <body>
 
-  <div id="seal-container">
-    <img id="arcane-seal-img" src="./selo-arcano.png" alt="Selo Arcano">
-  </div>
+<div id="seal-container">
+<img id="arcane-seal-img" src="./selo-arcano.png" alt="Selo Arcano">
+</div>
 
-  <canvas id="three-canvas"></canvas>
+<canvas id="three-canvas"></canvas>
 
-  <!-- Intersticial -->
-  <div id="interstitial">
-    <div class="interstitial-text">Sua mente é preenchida por um fluxo de pensamentos</div>
-  </div>
+<!-- Intersticial -->
+<div id="interstitial">
+<div class="interstitial-text">Sua mente é preenchida por um fluxo de pensamentos</div>
+</div>
 
-  <div id="signature-container">
-    <p id="signature">
+<div id="signature-container">
+<p id="signature">
 O coração dispara antes que você perceba que deixou a carta cair. O papel atinge o chão, mas a sensação de contato não some com ele. Algo fica preso na sua cabeça, como se um pensamento entrasse sem pedir permissão. Não é visão, nem sonho. É lembrança de algo que você nunca viveu.<br><br>
 A imagem vem inteira, sem construção, sem origem: uma taverna que você nunca viu, mas reconhece. Tábuas escuras, cheiro de ferrugem, luz baixa demais para ser aconchegante, mesas que já desistiram de permanecer retas. Ferrugem & Ossos. Velha Chama. O nome surge pronto, como se sempre estivesse guardado em algum ponto da sua mente que não era seu.<br><br>
 Ninguém diz que você deve ir.<br>
 Mas a sensação é de que você já está atrasado.
-    </p>
-  </div>
+</p>
+</div>
 
-  <!-- Shaders -->
-  <script type="x-shader/x-vertex" id="vertexShader">
-    varying vec2 vUv;
-    void main(){
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-    }
-  </script>
+<!-- Shaders -->
+<script type="x-shader/x-vertex" id="vertexShader">
+varying vec2 vUv;
+void main(){
+vUv = uv;
+gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+}
+</script>
 
-  <script type="x-shader/x-fragment" id="fragmentShader">
-    uniform sampler2D map; uniform float time; uniform vec3 glowColor; uniform float distortionStrength;
-    varying vec2 vUv;
-    float rand(vec2 co){ return fract(sin(dot(co.xy, vec2(12.9898,78.233))) * 43758.5453); }
-    void main(){
-      vec2 uv = vUv;
-      float bend = 0.35;
-      vec2 p = uv * 2.0 - 1.0;
-      p.y = p.y + bend * (p.y * p.y);
-      float perspective = 1.0 + bend * (p.y + 1.0) * 0.5;
-      p /= perspective;
-      vec2 warpedUv = p * 0.5 + 0.5;
+<script type="x-shader/x-fragment" id="fragmentShader">
+uniform sampler2D map;
+uniform float time;
+uniform vec3 glowColor;
+uniform float baseDistortion;
+uniform float baseNoise;
+uniform float beatLevel;
 
-      vec2 distortedUv = warpedUv;
-      float noise = (rand(warpedUv * 10.0 + time * 0.5) - 0.5) * distortionStrength;
-      distortedUv.x += sin(warpedUv.y * 15.0 + time * 8.0) * noise;
-      distortedUv.y += cos(warpedUv.x * 15.0 + time * 7.0) * noise;
+varying vec2 vUv;
 
-      vec4 texel = texture2D(map, clamp(distortedUv, 0.0, 1.0));
-      float pulseFactor = (sin(time * 1.6) * 0.25 + 0.45);
-      vec3 purpleGlow = glowColor * texel.a * pulseFactor * 1.0;
-      vec3 finalColor = mix(vec3(1.0,1.0,1.0), purpleGlow, texel.a);
-      finalColor += glowColor * texel.a * pulseFactor * 0.75;
-      gl_FragColor = vec4(finalColor, texel.a);
-    }
-  </script>
+float rand(vec2 co){ return fract(sin(dot(co.xy, vec2(12.9898,78.233))) * 43758.5453); }
 
-  <script>
-    /* ============ TEXTO ============ */
-    const LOREM_IPSUM_ARCANO = `
+void main(){
+vec2 uv = vUv;
+
+/* Curvatura leve */
+float bend = 0.35;
+vec2 p = uv * 2.0 - 1.0;
+p.y = p.y + bend * (p.y * p.y);
+float perspective = 1.0 + bend * (p.y + 1.0) * 0.5;
+p /= perspective;
+vec2 warpedUv = p * 0.5 + 0.5;
+
+/* Ondas + ruído reativos ao beat */
+float waveAmp = baseDistortion * (0.7 + 2.2 * beatLevel);
+float wave = waveAmp * sin(warpedUv.y * (18.0 + 10.0*beatLevel) + time * (1.6 + 1.5*beatLevel));
+vec2 distortedUv = warpedUv;
+distortedUv.x += wave;
+
+float nAmp = baseNoise * (0.6 + 1.8 * beatLevel);
+float nSeed = rand(warpedUv * (18.0 + 6.0*beatLevel) + time * (0.6 + 0.9*beatLevel));
+float noise = (nSeed - 0.5) * nAmp;
+distortedUv.y += noise * 0.9;
+distortedUv.x += noise * 0.5;
+
+vec4 texel = texture2D(map, clamp(distortedUv, 0.0, 1.0));
+
+/* Cor reativa ao beat */
+float b = clamp(beatLevel, 0.0, 1.2);
+float colorPulse = smoothstep(0.0, 1.0, b);
+vec3 white = vec3(1.0);
+vec3 purple = normalize(glowColor) * 0.7 + vec3(0.35,0.0,0.65)*0.3;
+vec3 colorText = mix(white, purple, colorPulse);
+float blackout = smoothstep(0.93, 1.05, b);
+colorText = mix(colorText, vec3(0.0), 0.38 * blackout);
+
+vec3 glow = glowColor * texel.a * (0.35 + 0.65 * colorPulse) * 0.55;
+vec3 color = colorText * texel.a + glow;
+
+gl_FragColor = vec4(color, texel.a);
+}
+</script>
+
+<script>
+/* ============ TEXTO ============ */
+const LOREM_IPSUM_ARCANO = `
 Nas veias do cosmo, onde a luz teme pisar,
 o Vazio pulsa em compasso ancestral.
 Ouve, neófito, o sussurro das eras:
@@ -177,315 +203,394 @@ Contempla a Cifra.
 Entende o Padrão.
 O selo se abre.
 A jornada é tua.
-    `;
+`;
 
-    /* ============ VARS ============ */
-    let scene, camera, renderer;
-    let sfx1, sfx2, sfx25, sfx3;
-    let sfx2Id = null, sfx25Id = null;
-    let binauralTargets = [];
-    let crawlGroup, textMesh, textHeight;
-    let animationInProgress = false;
-    let endThreshold = 0;
-    let clock = new THREE.Clock();
+/* ============ BEAT DETECTION ============ */
+let BEAT = { fps: 60, durationSec: 0, values: [], ready: false };
 
-    const ARCANE_PURPLE = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--cor-arcana').trim());
+async function precomputeBeat(url){
+try{
+const resp = await fetch(url, {cache:'force-cache'});
+const arr = await resp.arrayBuffer();
 
-    /* ============ INIT ============ */
-    function init(){
-      setupAudio();
-      setupScene();
-      setupListeners();
-      startBinauralLoop();
-    }
+const AC = window.AudioContext || window.webkitAudioContext;
+const ctx = new AC({ sampleRate: 44100 });
+const decoded = await ctx.decodeAudioData(arr);
 
-    /* ============ AUDIO ============ */
-    function setupAudio(){
-      sfx1  = new Howl({ src:['./sfx1.mp3'],   volume:0.8, loop:false, html5:false });
-      sfx2  = new Howl({ src:['./sfx2.mp3'],   volume:0.6, loop:true,  html5:false });
-      sfx25 = new Howl({ src:['./sfx2_5.mp3'], volume:1.0, loop:true,  html5:false });
-      sfx3  = new Howl({ src:['./sfx3.mp3'],   volume:0.6, loop:false, html5:false });
-    }
+const chL = decoded.getChannelData(0);
+const chR = decoded.numberOfChannels>1 ? decoded.getChannelData(1) : null;
 
-    /* ============ SCENE ============ */
-    function setupScene(){
-      const canvas = document.getElementById('three-canvas');
-      scene = new THREE.Scene();
+const sr = decoded.sampleRate;
+const hop = Math.max(1, Math.floor(sr / BEAT.fps));
 
-      const aspect = window.innerWidth / window.innerHeight;
-      camera = new THREE.PerspectiveCamera(50, aspect, 1, 10000);
-      camera.position.set(0, 130, 480);
-      camera.lookAt(0, 0, 0);
-      scene.add(camera);
+const env = [];
+let peak = 0;
 
-      renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); /* mobile = desktop */
-    }
+for (let i=0; i<decoded.length; i+=hop){
+let sum=0, count=0;
+for (let j=0; j<hop && (i+j)<decoded.length; j++){
+const sL = chL[i+j];
+const sR = chR ? chR[i+j] : 0;
+const m = chR ? (sL + sR) * 0.5 : sL;
+sum += m*m; count++;
+}
+const rms = Math.sqrt(sum / Math.max(1,count));
+env.push(rms); if (rms>peak) peak=rms;
+}
 
-    function setupListeners(){
-      document.getElementById('seal-container').addEventListener('click', startExperience, { once:true });
-      window.addEventListener('resize', onWindowResize);
-    }
+const smooth = (arr,k=0.85)=>{
+const out = new Float32Array(arr.length);
+let prev=0; for (let i=0;i<arr.length;i++){ prev=prev*k+arr[i]*(1-k); out[i]=prev; }
+prev=0; for (let i=arr.length-1;i>=0;i--){ prev=prev*k+out[i]*(1-k); out[i]=Math.max(out[i],prev); }
+return Array.from(out);
+};
+let sm = smooth(env, 0.86);
 
-    /* ============ FLOW ============ */
-    function startExperience(){
-      if (animationInProgress) return;
-      animationInProgress = true;
+const sorted = [...sm].sort((a,b)=>a-b);
+const p95 = sorted[Math.floor(sorted.length*0.95)] || (peak || 1);
+sm = sm.map(v => Math.min(1, v / (p95 || 1)));
+sm = sm.map(v => Math.pow(v, 0.6));
 
-      const sealImg = document.getElementById('arcane-seal-img');
-      sealImg.classList.add('clicked');
+BEAT.values = sm;
+BEAT.durationSec = decoded.duration;
+BEAT.ready = true;
 
-      // Áudio do selo (imediato)
-      const id1 = sfx1.play();
-      makeBinaural(sfx1, id1, {speed:1.4, radius:0.9, jitter:0.35});
+ctx.close && ctx.close();
+}catch(e){
+console.warn('Pré-cálculo do beat falhou.', e);
+const total = 60 * 30;
+const vals = [];
+for (let i=0;i<total;i++){
+const t=i/60;
+vals.push( (Math.sin(t*2*Math.PI*1.1)*0.5+0.5) );
+}
+BEAT.values = vals;
+BEAT.durationSec = total/60;
+BEAT.ready = true;
+}
+}
 
-      // Esconde o selo visualmente
-      setTimeout(() => { document.getElementById('seal-container').style.display='none'; }, 400);
+function getBeatAt(timeSec){
+if (!BEAT.ready || BEAT.values.length===0) {
+return (Math.sin(timeSec*2*Math.PI*1.0)*0.5+0.5);
+}
+const t = timeSec % BEAT.durationSec;
+const idx = Math.floor(t * BEAT.fps) % BEAT.values.length;
+return BEAT.values[idx];
+}
 
-      // Tela intersticial por 3s
-      showInterstitial(3000);
+/* ============ VARS ============ */
+let scene, camera, renderer;
+let sfx1, sfx2, sfx25, sfx3;
+let sfx2Id = null, sfx25Id = null;
+let binauralTargets = [];
+let crawlGroup, textMesh, textHeight;
+let animationInProgress = false;
+let endThreshold = 0;
+let clock = new THREE.Clock();
+let beatAccum = 0;
+let lastFrameMs = null;
 
-      // NOVO: sfx2 e sfx2_5 atrasados +3s (total 4.5s após clique)
-      setTimeout(() => {
-        // sfx2 (Rusty Wheel) + binaural + reverb metálico
-        sfx2Id = sfx2.play();
-        makeBinaural(sfx2, sfx2Id, {speed:1.3, radius:1.2, jitter:0.5});
-        setTimeout(() => { applyReverbToSound(sfx2, sfx2Id, {seconds:1.8, decay:3.0, wet:0.8}); }, 120);
+const ARCANE_PURPLE = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--cor-arcana').trim());
 
-        // sfx2_5 (garante tocar após load)
-        sfx25.once('load', () => {
-          sfx25Id = sfx25.play();
-          makeBinaural(sfx25, sfx25Id, {speed:1.5, radius:1.0, jitter:0.45});
-        });
-        // Se já estiver carregado, play direto
-        if (sfx25.state() === 'loaded' && !sfx25Id) {
-          sfx25Id = sfx25.play();
-          makeBinaural(sfx25, sfx25Id, {speed:1.5, radius:1.0, jitter:0.45});
-        }
-      }, 4500);
+/* ============ INIT ============ */
+function init(){
+setupAudio();
+setupScene();
+setupListeners();
+precomputeBeat('./sfx2_5.mp3'); // Pré-carrega beat
+startBinauralLoop();
+}
 
-      // Começa o texto logo após a tela intersticial sair (3s + ~0.5s do fade)
-      setTimeout(() => {
-        createCrawlText();
-        animate();
-      }, 3600);
-    }
+/* ============ AUDIO ============ */
+function setupAudio(){
+sfx1 = new Howl({ src:['./sfx1.mp3'], volume:0.8, loop:false, html5:false });
+sfx2 = new Howl({ src:['./sfx2.mp3'], volume:0.6, loop:true, html5:false });
+sfx25 = new Howl({ src:['./sfx2_5.mp3'], volume:1.0, loop:true, html5:false });
+sfx3 = new Howl({ src:['./sfx3.mp3'], volume:0.6, loop:false, html5:false });
+}
 
-    function showInterstitial(ms){
-      const inter = document.getElementById('interstitial');
-      inter.style.display = 'flex';
-      requestAnimationFrame(() => inter.classList.add('show'));
-      setTimeout(() => {
-        inter.classList.remove('show');
-        inter.classList.add('hide');
-        setTimeout(() => {
-          inter.style.display = 'none';
-          inter.classList.remove('hide');
-        }, 500);
-      }, ms);
-    }
+/* ============ SCENE ============ */
+function setupScene(){
+const canvas = document.getElementById('three-canvas');
+scene = new THREE.Scene();
 
-    function createCrawlText(){
-      const textCanvas = createTextCanvas(LOREM_IPSUM_ARCANO);
-      textHeight = textCanvas.height;
+const aspect = window.innerWidth / window.innerHeight;
+camera = new THREE.PerspectiveCamera(50, aspect, 1, 10000);
+camera.position.set(0, 130, 480);
+camera.lookAt(0, 0, 0);
+scene.add(camera);
 
-      const texture = new THREE.CanvasTexture(textCanvas);
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
+renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
 
-      const material = new THREE.ShaderMaterial({
-        uniforms:{
-          map:{ value:texture },
-          time:{ value:0.0 },
-          glowColor:{ value:ARCANE_PURPLE },
-          distortionStrength:{ value:0.0075 }
-        },
-        vertexShader: document.getElementById('vertexShader').textContent,
-        fragmentShader: document.getElementById('fragmentShader').textContent,
-        transparent:true, side:THREE.DoubleSide
-      });
+function setupListeners(){
+document.getElementById('seal-container').addEventListener('click', startExperience, { once:true });
+window.addEventListener('resize', onWindowResize);
+}
 
-      const geometry = new THREE.PlaneGeometry(textCanvas.width, textHeight);
-      textMesh = new THREE.Mesh(geometry, material);
+/* ============ FLOW ============ */
+function startExperience(){
+if (animationInProgress) return;
+animationInProgress = true;
 
-      crawlGroup = new THREE.Group();
-      crawlGroup.add(textMesh);
+const sealImg = document.getElementById('arcane-seal-img');
+sealImg.classList.add('clicked');
 
-      crawlGroup.rotation.x = 0;
-      const startY = -textHeight / 2 - 280; /* um pouco mais baixo pra já aparecer */
-      crawlGroup.position.y = startY;
+const id1 = sfx1.play();
+makeBinaural(sfx1, id1, {speed:1.4, radius:0.9, jitter:0.35});
 
-      endThreshold = (textHeight * Math.cos(crawlGroup.rotation.x)) * 1.20; /* sobe mais longe, não corta */
+setTimeout(() => { document.getElementById('seal-container').style.display='none'; }, 400);
 
-      scene.add(crawlGroup);
-    }
+showInterstitial(3000);
 
-    function createTextCanvas(text){
-      const lines = text.split('\n');
-      const fontSize = 32; /* - ~6% para garantir não cortar */
-      const lineHeight = fontSize * 1.3;
+setTimeout(() => {
+sfx2Id = sfx2.play();
+makeBinaural(sfx2, sfx2Id, {speed:1.3, radius:1.2, jitter:0.5});
+setTimeout(() => { applyReverbToSound(sfx2, sfx2Id, {seconds:1.8, decay:3.0, wet:0.8}); }, 120);
 
-      const canvasHeight = lines.length * lineHeight + (fontSize * 2);
-      const canvasWidth = 1024;
+if (sfx25.state() === 'loaded') {
+sfx25Id = sfx25.play();
+makeBinaural(sfx25, sfx25Id, {speed:1.5, radius:1.0, jitter:0.45});
+} else {
+sfx25.once('load', () => {
+sfx25Id = sfx25.play();
+makeBinaural(sfx25, sfx25Id, {speed:1.5, radius:1.0, jitter:0.45});
+});
+}
+}, 4500);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+setTimeout(() => {
+createCrawlText();
+clock = new THREE.Clock(true);
+beatAccum = 0;
+lastFrameMs = performance.now();
+animate();
+}, 3600);
+}
 
-      const ctx = canvas.getContext('2d');
-      ctx.font = `${fontSize}px 'Cinzel Decorative'`;
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'center';
+function showInterstitial(ms){
+const inter = document.getElementById('interstitial');
+inter.style.display = 'flex';
+requestAnimationFrame(() => inter.classList.add('show'));
+setTimeout(() => {
+inter.classList.remove('show');
+inter.classList.add('hide');
+setTimeout(() => {
+inter.style.display = 'none';
+inter.classList.remove('hide');
+}, 500);
+}, ms);
+}
 
-      let y = fontSize * 2;
-      for (const line of lines){
-        ctx.fillText(line, canvasWidth/2, y);
-        y += lineHeight;
-      }
-      return canvas;
-    }
+function createCrawlText(){
+const textCanvas = createTextCanvas(LOREM_IPSUM_ARCANO);
+textHeight = textCanvas.height;
 
-    function animate(){
-      requestAnimationFrame(animate);
-      if (!animationInProgress) return;
+const texture = new THREE.CanvasTexture(textCanvas);
+texture.minFilter = THREE.LinearFilter;
+texture.magFilter = THREE.LinearFilter;
 
-      if (textMesh && textMesh.material && textMesh.material.uniforms && textMesh.material.uniforms.time){
-        textMesh.material.uniforms.time.value = clock.getElapsedTime();
-      }
+const material = new THREE.ShaderMaterial({
+uniforms:{
+map:{ value:texture },
+time:{ value:0.0 },
+glowColor:{ value:ARCANE_PURPLE },
+baseDistortion:{ value:0.010 },
+baseNoise:{ value:0.010 },
+beatLevel:{ value:0.0 }
+},
+vertexShader: document.getElementById('vertexShader').textContent,
+fragmentShader: document.getElementById('fragmentShader').textContent,
+transparent:true, side:THREE.DoubleSide
+});
 
-      // Desaceleração suave perto do final pra não cortar
-      const base = 0.8;
-      const remaining = Math.max(0, endThreshold - crawlGroup.position.y);
-      const slowFactor = remaining < 200 ? Math.max(0.4, remaining / 200) : 1.0;
-      crawlGroup.position.y += base * slowFactor;
+const geometry = new THREE.PlaneGeometry(textCanvas.width, textHeight);
+textMesh = new THREE.Mesh(geometry, material);
 
-      if (crawlGroup.position.y > endThreshold){
-        finishAnimation();
-      }
+crawlGroup = new THREE.Group();
+crawlGroup.add(textMesh);
 
-      renderer.render(scene, camera);
-    }
+crawlGroup.rotation.x = 0;
+const startY = -textHeight / 2 - 280;
+crawlGroup.position.y = startY;
 
-    function finishAnimation(){
-      animationInProgress = false;
+endThreshold = (textHeight * Math.cos(crawlGroup.rotation.x)) * 1.20;
 
-      if (crawlGroup){
-        scene.remove(crawlGroup);
-        if (textMesh.geometry) textMesh.geometry.dispose();
-        if (textMesh.material){
-          if (textMesh.material.map) textMesh.material.map.dispose();
-          textMesh.material.dispose();
-        }
-      }
+scene.add(crawlGroup);
+}
 
-      // Fade-out sfx2 e sfx2_5
-      if (sfx2Id !== null && sfx2.playing(sfx2Id)){
-        sfx2.fade(sfx2.volume(sfx2Id), 0, 800, sfx2Id);
-        setTimeout(() => { try{ sfx2.stop(sfx2Id); }catch(e){} }, 820);
-      }
-      if (sfx25Id !== null && sfx25.playing(sfx25Id)){
-        sfx25.fade(sfx25.volume(sfx25Id), 0, 800, sfx25Id);
-        setTimeout(() => { try{ sfx25.stop(sfx25Id); }catch(e){} }, 820);
-      }
+function createTextCanvas(text){
+const lines = text.split('\n');
+const fontSize = 32;
+const lineHeight = fontSize * 1.3;
 
-      // Assinatura + sfx3 (inalterado; 1s depois)
-      const signature = document.getElementById('signature-container');
-      signature.style.display = 'block';
-      setTimeout(() => { signature.style.opacity = '1'; }, 100);
+const canvasHeight = lines.length * lineHeight + (fontSize * 2);
+const canvasWidth = 1024;
 
-      setTimeout(() => {
-        const id3 = sfx3.play();
-        makeBinaural(sfx3, id3, {speed:1.6, radius:0.8, jitter:0.4});
-      }, 1000);
-    }
+const canvas = document.createElement('canvas');
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
 
-    function onWindowResize(){
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+const ctx = canvas.getContext('2d');
+ctx.font = `${fontSize}px 'Cinzel Decorative'`;
+ctx.fillStyle = '#FFFFFF';
+ctx.textAlign = 'center';
 
-    /* ============ AUDIO FX (BINAURAL + REVERB) ============ */
-    function makeBinaural(howl, soundId, opts={}){
-      const speed  = opts.speed  ?? 1.4;
-      const radius = opts.radius ?? 1.0;
-      const jitter = opts.jitter ?? 0.3;
-      howl.pannerAttr({ panningModel:'HRTF', refDistance:1, rolloffFactor:0.9 }, soundId);
-      howl.pos(0, 0, -0.3, soundId);
-      binauralTargets.push({ howl, soundId, speed, radius, jitter, t0: performance.now()/1000 });
-    }
+let y = fontSize * 2;
+for (const line of lines){
+ctx.fillText(line, canvasWidth/2, y);
+y += lineHeight;
+}
+return canvas;
+}
 
-    function startBinauralLoop(){
-      function frame(){
-        const now = performance.now()/1000;
-        binauralTargets = binauralTargets.filter(target=>{
-          const { howl, soundId, speed, radius, jitter, t0 } = target;
-          if (!howl.playing(soundId)) return false;
+function animate(){
+requestAnimationFrame(animate);
+if (!animationInProgress) return;
 
-          // trajetória irregular agressiva
-          const t = (now - t0) * (1.0 / Math.max(0.001, speed));
-          const a=2.3, b=1.7;
-          const x = Math.sin(a*t) * radius * (0.85 + 0.15*Math.sin(t*3.1));
-          const y = (Math.sin(b*t*0.7)*0.25) + (Math.random()-0.5)*0.02*jitter;
-          const z = (Math.cos(a*t*0.9)*0.7) - 0.3 + (Math.random()-0.5)*0.02*jitter;
+const nowMs = performance.now();
+const dt = lastFrameMs ? (nowMs - lastFrameMs)/1000 : 0;
+lastFrameMs = nowMs;
 
-          howl.pos(x,y,z, soundId);
-          return true;
-        });
-        requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
-    }
+beatAccum += dt;
+const beat = getBeatAt(beatAccum);
 
-    function applyReverbToSound(howl, soundId, {seconds=1.8, decay=3.0, wet=0.8}={}){
-      try{
-        const ctx = Howler.ctx;
-        const sound = howl._soundById(soundId);
-        if (!sound) return;
+if (textMesh && textMesh.material.uniforms){
+textMesh.material.uniforms.time.value = clock.getElapsedTime();
+textMesh.material.uniforms.beatLevel.value = beat;
+}
 
-        const sourceNode = sound._panner || sound._node;
-        if (!sourceNode) return;
+const base = 0.8;
+const remaining = Math.max(0, endThreshold - crawlGroup.position.y);
+const slowFactor = remaining < 200 ? Math.max(0.4, remaining / 200) : 1.0;
+crawlGroup.position.y += base * slowFactor;
 
-        if (sound.__reverbApplied) return;
-        sound.__reverbApplied = true;
+if (crawlGroup.position.y > endThreshold){
+finishAnimation();
+}
 
-        const convolver = ctx.createConvolver();
-        convolver.buffer = createImpulseResponse(ctx, seconds, decay);
+renderer.render(scene, camera);
+}
 
-        const wetGain = ctx.createGain(); wetGain.gain.value = wet;      // 0.8
-        const dryGain = ctx.createGain(); dryGain.gain.value = 1 - wet;  // 0.2
+function finishAnimation(){
+animationInProgress = false;
 
-        try{ sourceNode.disconnect(); }catch(e){}
+if (crawlGroup){
+scene.remove(crawlGroup);
+if (textMesh.geometry) textMesh.geometry.dispose();
+if (textMesh.material){
+if (textMesh.material.map) textMesh.material.map.dispose();
+textMesh.material.dispose();
+}
+}
 
-        sourceNode.connect(dryGain);
-        sourceNode.connect(convolver);
+if (sfx2Id !== null && sfx2.playing(sfx2Id)){
+sfx2.fade(sfx2.volume(sfx2Id), 0, 800, sfx2Id);
+setTimeout(() => { try{ sfx2.stop(sfx2Id); }catch(e){} }, 820);
+}
+if (sfx25Id !== null && sfx25.playing(sfx25Id)){
+sfx25.fade(sfx25.volume(sfx25Id), 0, 800, sfx25Id);
+setTimeout(() => { try{ sfx25.stop(sfx25Id); }catch(e){} }, 820);
+}
 
-        convolver.connect(wetGain);
-        dryGain.connect(Howler.masterGain);
-        wetGain.connect(Howler.masterGain);
+const signature = document.getElementById('signature-container');
+signature.style.display = 'block';
+setTimeout(() => { signature.style.opacity = '1'; }, 100);
 
-        sound.__reverb = { convolver, wetGain, dryGain };
-      }catch(e){
-        console.warn('Reverb não pôde ser aplicado:', e);
-      }
-    }
+setTimeout(() => {
+const id3 = sfx3.play();
+makeBinaural(sfx3, id3, {speed:1.6, radius:0.8, jitter:0.4});
+}, 1000);
+}
 
-    function createImpulseResponse(ctx, seconds=1.8, decay=3.0){
-      const rate = ctx.sampleRate;
-      const length = Math.max(1, Math.floor(rate * seconds));
-      const impulse = ctx.createBuffer(2, length, rate);
-      for (let ch=0; ch<2; ch++){
-        const data = impulse.getChannelData(ch);
-        for (let i=0; i<length; i++){
-          const n = Math.random()*2 - 1;
-          data[i] = n * Math.pow(1 - i/length, decay);
-        }
-      }
-      return impulse;
-    }
+function onWindowResize(){
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
-    init();
-  </script>
+/* ============ AUDIO FX ============ */
+function makeBinaural(howl, soundId, opts={}){
+const speed = opts.speed ?? 1.4;
+const radius = opts.radius ?? 1.0;
+const jitter = opts.jitter ?? 0.3;
+howl.pannerAttr({ panningModel:'HRTF', refDistance:1, rolloffFactor:0.9 }, soundId);
+howl.pos(0, 0, -0.3, soundId);
+binauralTargets.push({ howl, soundId, speed, radius, jitter, t0: performance.now()/1000 });
+}
+
+function startBinauralLoop(){
+function frame(){
+const now = performance.now()/1000;
+binauralTargets = binauralTargets.filter(target=>{
+const { howl, soundId, speed, radius, jitter, t0 } = target;
+if (!howl.playing(soundId)) return false;
+
+const t = (now - t0) * (1.0 / Math.max(0.001, speed));
+const a=2.3, b=1.7;
+const x = Math.sin(a*t) * radius * (0.85 + 0.15*Math.sin(t*3.1));
+const y = (Math.sin(b*t*0.7)*0.25) + (Math.random()-0.5)*0.02*jitter;
+const z = (Math.cos(a*t*0.9)*0.7) - 0.3 + (Math.random()-0.5)*0.02*jitter;
+
+howl.pos(x,y,z, soundId);
+return true;
+});
+requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+}
+
+function applyReverbToSound(howl, soundId, {seconds=1.8, decay=3.0, wet=0.8}={}){
+try{
+const ctx = Howler.ctx;
+const sound = howl._soundById(soundId);
+if (!sound) return;
+
+const sourceNode = sound._panner || sound._node;
+if (!sourceNode) return;
+
+if (sound.__reverbApplied) return;
+sound.__reverbApplied = true;
+
+const convolver = ctx.createConvolver();
+convolver.buffer = createImpulseResponse(ctx, seconds, decay);
+
+const wetGain = ctx.createGain(); wetGain.gain.value = wet;
+const dryGain = ctx.createGain(); dryGain.gain.value = 1 - wet;
+
+try{ sourceNode.disconnect(); }catch(e){}
+
+sourceNode.connect(dryGain);
+sourceNode.connect(convolver);
+
+convolver.connect(wetGain);
+dryGain.connect(Howler.masterGain);
+wetGain.connect(Howler.masterGain);
+
+sound.__reverb = { convolver, wetGain, dryGain };
+}catch(e){
+console.warn('Reverb não pôde ser aplicado:', e);
+}
+}
+
+function createImpulseResponse(ctx, seconds=1.8, decay=3.0){
+const rate = ctx.sampleRate;
+const length = Math.max(1, Math.floor(rate * seconds));
+const impulse = ctx.createBuffer(2, length, rate);
+for (let ch=0; ch<2; ch++){
+const data = impulse.getChannelData(ch);
+for (let i=0; i<length; i++){
+const n = Math.random()*2 - 1;
+data[i] = n * Math.pow(1 - i/length, decay);
+}
+}
+return impulse;
+}
+
+init();
+</script>
 </body>
 </html>
