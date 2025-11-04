@@ -74,19 +74,13 @@ function animate(){
   if (textMesh && textMesh.material){
     const u = textMesh.material.uniforms;
     u.time.value = clock.getElapsedTime();
-    u.beatLevel.value = getBeatAt(beatAccum);
-  
-if (textMesh && textMesh.material && textMesh.material.uniforms){
-  const U = textMesh.material.uniforms;
-  const rateVal = (typeof rate !== 'undefined') ? rate : 1.0;
-  const beatVal = U.beatLevel ? U.beatLevel.value : 0.0;
-  if (U.distortionStrength){
-    U.distortionStrength.value = computeDistortionFromBeat(beatVal, rateVal);
-  } else if (U.baseDistortion){
-    U.baseDistortion.value = computeDistortionFromBeat(beatVal, rateVal);
+    
+    const beatLevel = getBeatAt(beatAccum);
+    const dist = computeDistortionFromBeat(beatLevel, rate);
+    if (u.distortionStrength){
+      u.distortionStrength.value = dist;
+    }
   }
-}
-}
 
   if (crawlGroup){ crawlGroup.position.y += SETTINGS.typing.driftPerFrame; }
 
