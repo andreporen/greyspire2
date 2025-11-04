@@ -45,12 +45,3 @@ export function playSignatureSfx(){
   sfx3.play();
 }
 
-
-function computeDistortionFromBeat(beatLevel, rate){
-  const BASE = 0.0022;
-  const PEAK = 0.0045;
-  const boost = Math.min(1, (rate - 1) / 0.5);
-  const k = Math.min(1, Math.max(0, 0.6*beatLevel + 0.4*boost));
-  return BASE + (PEAK - BASE) * k;
-}
-
