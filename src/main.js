@@ -1,4 +1,4 @@
-import { SETTINGS } from './settings.js';
+﻿import { SETTINGS } from './settings.js';
 import { POEMA } from './poem.js';
 import { initScene } from './scene.js';
 import { createTextMesh } from './crawl.js';
@@ -32,6 +32,13 @@ function startExperience(){
   playStart();
 
   const lines = POEMA.trim().split('\n');
+  
+  // Inserir o texto no DOM para acessibilidade (leitores de tela)
+  const poemContainer = document.getElementById('a11y-poem-container');
+  if (poemContainer) {
+    poemContainer.innerHTML = lines.map(line => <p></p>).join('');
+  }
+
   ({ group:crawlGroup, mesh:textMesh, texture, textConf } = createTextMesh(renderer, lines));
   scene.add(crawlGroup);
 

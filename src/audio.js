@@ -1,4 +1,5 @@
-let sfx1, sfx2, sfx25, sfx3;
+﻿let sfx1, sfx2, sfx25, sfx3;
+let heartBeatSoundId = null;
 
 export function setupAudio() {
   Howler.autoSuspend = false;
@@ -11,36 +12,38 @@ export function setupAudio() {
   sfx3  = new Howl({ src:['./assets/sfx3.mp3'],  volume:0.6, loop:false });
 
   [sfx1,sfx2,sfx25,sfx3].forEach(h=>
-    h.once('playerror',(id)=>{try{Howler.ctx.resume()}catch(e){} try{h.play(id)}catch(e){}})
+    h.once('playerror',(id)=>{
+      try{ Howler.ctx.resume() }catch(e){ console.warn('Falha ao resumir audio context', e) }
+      try{ h.play(id) }catch(e){ console.warn('Falha ao tentar tocar som apÃ³s erro', e) }
+    })
   );
 }
 
 export function playStart() {
   sfx1.play();
   sfx2.play();
-  sfx25.play();
+  heartBeatSoundId = sfx25.play();
 }
 
 export function setHeartRate(rate){
   try{
-    if (sfx25 && sfx25._sounds && sfx25._sounds.length>0){
-      const id = sfx25._sounds[0]._id;
-      if (id) sfx25.rate(rate, id);
+    if (heartBeatSoundId !== null){
+      sfx25.rate(rate, heartBeatSoundId);
     }
-  }catch(e){}
+  }catch(e){ console.warn('Falha ao definir heart rate:', e); }
 }
 
 export function fadeOutAmbience(ms=600){
   [sfx2,sfx25].forEach(s=>{
     try{
-      const id = s._sounds[0]? s._sounds[0]._id : null;
-      if (id!==null) s.fade(s.volume(id), 0, ms, id);
-      setTimeout(()=>{ try{s.stop()}catch(e){} }, ms+20);
-    }catch(e){}
+      // O fade(volume, 0, ms) aplica a todos os sons ativos se nenhum ID for passado.
+      s.fade(s.volume(), 0, ms);
+      setTimeout(()=>{ try{s.stop()}catch(e){ console.warn('Falha ao parar som', e); } }, ms+20);
+    }catch(e){ console.warn('Falha ao aplicar fade out:', e); }
   });
 }
 
 export function playSignatureSfx(){
-  try{ if (Howler.ctx && Howler.ctx.state!=='running') Howler.ctx.resume(); }catch(e){}
+  try{ if (Howler.ctx && Howler.ctx.state!=='running') Howler.ctx.resume(); }catch(e){ console.warn('Falha ao resumir audio context', e); }
   sfx3.play();
 }

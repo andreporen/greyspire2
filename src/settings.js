@@ -1,5 +1,10 @@
-export const SETTINGS = {
+﻿export const SETTINGS = {
   colors: { arcane: '#b24cff' },
+
+  font: {
+    family: "'Cinzel Decorative'",
+    weight: 700
+  },
 
   typing: {
     perWordMs: 220,            // velocidade (A1)
@@ -29,6 +34,7 @@ export const SETTINGS = {
     baseTextureWidth: 1024,
     dprMax: 3,
     supersample: 2.0,
-    verticalMaxViewport: 0.84
+    verticalMaxViewport: 0.84,
+    startYOffset: -90
   }
 };

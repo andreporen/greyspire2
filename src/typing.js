@@ -1,7 +1,7 @@
-import { SETTINGS } from './settings.js';
+﻿import { SETTINGS } from './settings.js';
 
 export function prepareTokens(ctx, cssWidth, fontSize, lineHeight, lines){
-  ctx.font = `700 ${fontSize}px 'Cinzel Decorative'`;
+  ctx.font = ${SETTINGS.font.weight} px ;
   ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
@@ -50,7 +50,7 @@ export function startTyping(tokens, onDone){
 export function redrawTypingCanvas(ctx, conf, tokens, startedAt){
   const { cssWidth, cssHeight, fontSize } = conf;
   ctx.clearRect(0,0,cssWidth,cssHeight);
-  ctx.font = `700 ${conf.fontSize}px 'Cinzel Decorative'`;
+  ctx.font = ${SETTINGS.font.weight} px ;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
 
@@ -63,7 +63,7 @@ export function redrawTypingCanvas(ctx, conf, tokens, startedAt){
     const k = Math.min(1, age / SETTINGS.typing.materializeMs);
 
     ctx.globalAlpha = 0.15 + 0.85 * k;
-    ctx.shadowColor = `rgba(178,76,255,${(0.20*(1-k)).toFixed(3)})`;
+    ctx.shadowColor = gba(178,76,255,);
     ctx.shadowBlur  = 5*(1-k);
 
     ctx.fillStyle = '#FFFFFF';

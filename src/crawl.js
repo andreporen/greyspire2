@@ -1,4 +1,4 @@
-import { SETTINGS } from './settings.js';
+﻿import { SETTINGS } from './settings.js';
 import { vertexShader, fragmentShader } from './shaders.js';
 
 export function createTextMesh(renderer, poemLines){
@@ -51,7 +51,7 @@ export function createTextMesh(renderer, poemLines){
   group.add(mesh);
   group.rotation.x = 0;
 
-  const startY = -cssHeight/2 - 90;
+  const startY = -cssHeight/2 + SETTINGS.canvas.startYOffset;
   group.position.y = startY;
 
   mesh.userData.textConf = textConf;
